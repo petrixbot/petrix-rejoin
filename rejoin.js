@@ -573,20 +573,20 @@ async function menu_UpdateRobloxDelta() {
 
         console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
         execSync(
-            `su -c "/data/data/com.termux/files/usr/bin/wget \
+            `wget \
             -q --show-progress \
             --header='User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
             --header='Referer: https://delta.filenetwork.vip/android.html' \
             --header='Accept: application/octet-stream,*/*' \
             --header='Accept-Language: en-US,en;q=0.9' \
             --header='Connection: keep-alive' \
-            -O '${savePath}' '${downloadUrl}'"`,
+            -O '${savePath}' '${downloadUrl}'`,
             { stdio: 'inherit', env: TERMUX_ENV }
         );
 
         // Step 3: Install
         console.log(chalk.gray(`🛠️ Installing ${fileName}...`));
-        execSync(`su -c "pm install -r -g '${savePath}'"`, { stdio: 'pipe', env: TERMUX_ENV });
+        execSync(`pm install -r -g '${savePath}'`, { stdio: 'pipe', env: TERMUX_ENV });
 
         console.log(chalk.green(`✅ Success Installing Roblox Delta ${version}!`));
     } catch (err) {
