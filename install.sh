@@ -27,18 +27,7 @@ cd "$INSTALL_DIR"
 
 # Buat package.json (wajib untuk ES Module)
 echo "[4/6] Creating package.json..."
-cat > package.json << 'EOF'
-{
-  "name": "petrixbot",
-  "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "prompts": "^2.4.2",
-    "undici": "^6.19.8"
-  }
-}
-EOF
+printf '{\n  "name": "petrixbot",\n  "version": "1.0.0",\n  "type": "module",\n  "dependencies": {\n    "chalk": "^5.3.0",\n    "prompts": "^2.4.2",\n    "undici": "^6.19.8"\n  }\n}\n' > package.json
 
 # Install npm packages
 echo "[5/6] Installing packages..."
@@ -55,11 +44,7 @@ if [ ! -f rejoin.js ] || [ ! -s rejoin.js ]; then
 fi
 
 # Buat shortcut run
-cat > "$HOME/run.sh" << 'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-cd "$HOME/petrixbot"
-su -c "/data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/home/petrixbot/rejoin.js"
-EOF
+printf '#!/data/data/com.termux/files/usr/bin/bash\ncd "$HOME/petrixbot"\nsu -c "/data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/home/petrixbot/rejoin.js"\n' > "$HOME/run.sh"
 chmod +x "$HOME/run.sh"
 
 echo ""
