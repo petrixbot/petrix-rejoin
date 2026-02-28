@@ -572,8 +572,8 @@ async function menu_UpdateRobloxDelta() {
         const savePath = path.join('/data/data/com.termux/files/home/petrixbot/downloads', fileName);
         fs.mkdirSync(path.dirname(savePath), { recursive: true });
 
-        // Step 1: Coba download langsung via undici
-        console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
+        // Step 1: Undici download
+        console.log(chalk.gray(`📥 Downloading ${fileName}...`));
         let downloadSuccess = false;
 
         try {
@@ -606,43 +606,37 @@ async function menu_UpdateRobloxDelta() {
             }
         } catch (_) { }
 
-        // Step 2: Jika gagal (403 atau file kosong), buka browser lalu tunggu file muncul
+        // Step 2: Browser download
         if (!downloadSuccess) {
-            console.log(chalk.yellow(`⚠️ Direct download failed. Opening browser...`));
-            console.log(chalk.gray(`📂 Simpan file ke folder: petrixbot/downloads/`));
-            console.log(chalk.gray(`📄 Nama file: ${fileName}\n`));
-
             execSync(`am start -a android.intent.action.VIEW -d "${downloadUrl}"`, { env: TERMUX_ENV });
 
-            // Polling tiap 3 detik sampai file ada di salah satu lokasi
             const browserDownloadPath = `/storage/emulated/0/Download/${fileName}`;
             let waited = 0;
             const maxWait = 5 * 60 * 1000; // 5 menit
             while (waited < maxWait) {
-                await delay(3000);
-                waited += 3000;
+                waited += 1000;
 
                 // Cek di folder petrixbot/downloads/
                 if (fs.existsSync(savePath) && fs.statSync(savePath).size > 1024 * 1024) {
-                    console.log(chalk.green(`\n✅ File ditemukan (${(fs.statSync(savePath).size / 1024 / 1024).toFixed(1)} MB)`));
+                    console.log(chalk.green(`✅ ${fileName} Downloaded (${(fs.statSync(savePath).size / 1024 / 1024).toFixed(1)} MB)`));
                     downloadSuccess = true;
                     break;
                 }
 
                 // Cek di folder Download browser
                 if (fs.existsSync(browserDownloadPath) && fs.statSync(browserDownloadPath).size > 1024 * 1024) {
-                    console.log(chalk.gray(`\n📁 File ditemukan di Downloads, memindahkan...`));
                     fs.copyFileSync(browserDownloadPath, savePath);
                     fs.unlinkSync(browserDownloadPath);
-                    console.log(chalk.green(`✅ File dipindahkan (${(fs.statSync(savePath).size / 1024 / 1024).toFixed(1)} MB)`));
+                    console.log(chalk.green(`✅ ${fileName} Downloaded (${(fs.statSync(savePath).size / 1024 / 1024).toFixed(1)} MB)`));
                     downloadSuccess = true;
                     break;
                 }
 
-                process.stdout.write(chalk.gray(`\r⏳ Menunggu file download selesai... ${Math.floor(waited / 1000)}s`));
+                process.stdout.write(chalk.gray(`\r⏳ Waiting for the file download to complete... ${Math.floor(waited / 1000)}s`));
+                await delay(1000);
             }
 
-            if (!downloadSuccess) throw new Error('Timeout: file tidak ditemukan setelah 5 menit');
+            if (!downloadSuccess) throw new Error('Timeout: file not found after 5 minutes');
         }
 
         // Step 3: Install
