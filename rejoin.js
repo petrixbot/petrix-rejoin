@@ -573,6 +573,65 @@ async function menu_UpdateRobloxDelta() {
         fs.mkdirSync(path.dirname(savePath), { recursive: true });
 
         console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
+        execSync(
+            `su -c "/data/data/com.termux/files/usr/bin/wget \
+            -q --show-progress \
+            --header='User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
+            --header='Referer: https://delta.filenetwork.vip/android.html' \
+            --header='Accept: application/octet-stream,*/*' \
+            --header='Accept-Language: en-US,en;q=0.9' \
+            --header='Connection: keep-alive' \
+            -O '${savePath}' '${downloadUrl}'"`,
+            { stdio: 'inherit', env: TERMUX_ENV }
+        );
+
+        // Step 3: Install
+        console.log(chalk.gray(`🛠️ Installing ${fileName}...`));
+        execSync(`su -c "pm install -r -g '${savePath}'"`, { stdio: 'pipe', env: TERMUX_ENV });
+
+        console.log(chalk.green(`✅ Success Installing Roblox Delta ${version}!`));
+    } catch (err) {
+        console.log(chalk.red('❌ Error: ' + err.message));
+    }
+
+    console.log(chalk.gray('\nBack to main menu...'));
+    await delay(1000);
+    return menu_main();
+}
+
+async function menu_UpdateRobloxDelta_BACKUP() {
+    console.clear();
+    console.log(chalk.inverse("[PetrixBot PTPT-X8 - Updating Roblox Delta]"));
+
+    try {
+        console.log(chalk.gray('\n⏳ Getting Latest Roblox Delta...'));
+
+        const { statusCode, body } = await request('https://delta.filenetwork.vip/get_files.php', {
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
+                'Referer': 'https://delta.filenetwork.vip/android.html',
+                'Accept': 'application/json'
+            },
+            maxRedirections: 5
+        });
+
+        const data = JSON.parse(await body.text());
+        const latestApk = data.latest_apk[0];
+        if (!latestApk) return console.log(chalk.red('❌ No APK found'));
+
+        const fileName = latestApk.name;
+        const match = fileName.match(/Delta-([\d.]+?)(?:-\d+)?\.apk/);
+        const version = match ? match[1] : 'Unknown';
+        const downloadUrl = `https://delta.filenetwork.vip/file/${fileName}`;
+
+        //console.log(chalk.gray(`📦 Latest version : ${version}`));
+        //console.log(chalk.gray(`📄 File           : ${fileName}`));
+
+        const savePath = path.join('/data/data/com.termux/files/home/petrixbot/downloads', fileName);
+        fs.mkdirSync(path.dirname(savePath), { recursive: true });
+
+        console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
         const dlRes = await request(downloadUrl, {
             method: 'GET',
             headers: {
