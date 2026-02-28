@@ -7,7 +7,7 @@ import fs from 'fs';
 
 const TERMUX_ENV = {
     ...process.env,
-    PATH: '/data/data/com.termux/files/usr/bin:/system/bin:/system/xbin'
+    PATH: '/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/local/bin:/system/bin:/system/xbin'
 };
 
 if (process.getuid && process.getuid() !== 0) {
@@ -117,8 +117,9 @@ function roblox_getCookie() {
 
     try {
         const result = execSync(
-            `sqlite3 ${dbPath} "SELECT value FROM cookies WHERE name='.ROBLOSECURITY' AND host_key='.roblox.com' LIMIT 1;"`
-        ).toString().trim();
+            `sqlite3 ${dbPath} "SELECT value FROM cookies WHERE name='.ROBLOSECURITY' AND host_key='.roblox.com' LIMIT 1;"`,
+            { encoding: 'utf8', env: TERMUX_ENV }
+        ).trim();
         return result || null;
     } catch (err) {
         return null;
@@ -572,17 +573,31 @@ async function menu_UpdateRobloxDelta() {
         fs.mkdirSync(path.dirname(savePath), { recursive: true });
 
         console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
-        execSync(
-            `wget \
-            -q --show-progress \
-            --header='User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
-            --header='Referer: https://delta.filenetwork.vip/android.html' \
-            --header='Accept: application/octet-stream,*/*' \
-            --header='Accept-Language: en-US,en;q=0.9' \
-            --header='Connection: keep-alive' \
-            -O '${savePath}' '${downloadUrl}'`,
-            { stdio: 'inherit', env: TERMUX_ENV }
-        );
+        const dlRes = await request(downloadUrl, {
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
+                'Referer': 'https://delta.filenetwork.vip/android.html',
+                'Accept': 'application/octet-stream,*/*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Connection': 'keep-alive',
+                'Origin': 'https://delta.filenetwork.vip'
+            },
+            maxRedirections: 10
+        });
+
+        if (dlRes.statusCode !== 200) throw new Error(`Download failed: HTTP ${dlRes.statusCode}`);
+
+        const fileStream = fs.createWriteStream(savePath);
+        await new Promise((resolve, reject) => {
+            dlRes.body.pipe(fileStream);
+            dlRes.body.on('error', reject);
+            fileStream.on('finish', resolve);
+        });
+
+        const fileSize = fs.statSync(savePath).size;
+        if (fileSize === 0) throw new Error('Downloaded file is empty (0 bytes)');
+        console.log(chalk.green(`✅ Downloaded (${(fileSize / 1024 / 1024).toFixed(1)} MB)`));
 
         // Step 3: Install
         console.log(chalk.gray(`🛠️ Installing ${fileName}...`));
