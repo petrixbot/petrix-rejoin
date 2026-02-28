@@ -1,16 +1,4 @@
-if (process.getuid && process.getuid() !== 0) {
-    const { execFileSync } = await import('child_process');
-    const nodePath = process.execPath; // path node yang sedang jalan
-    try {
-        execFileSync('su', ['-c', `${nodePath} ${process.argv[1]}`], {
-            stdio: 'inherit',
-            env: { ...process.env, PATH: `/data/user/0/com.termux/files/usr/bin:${process.env.PATH}` }
-        });
-    } catch { }
-    process.exit(0);
-}
-
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { request } from 'undici';
 import prompts from 'prompts';
 import chalk from 'chalk';
@@ -21,6 +9,15 @@ const TERMUX_ENV = {
     ...process.env,
     PATH: '/data/data/com.termux/files/usr/bin:/system/bin:/system/xbin'
 };
+
+if (process.getuid && process.getuid() !== 0) {
+    try {
+        execFileSync('su', ['-c', `${process.execPath} ${process.argv[1]}`],
+            { stdio: 'inherit', env: TERMUX_ENV }
+        );
+    } catch { }
+    process.exit(0);
+}
 
 // Global Variabels
 let USER_COOKIE = null;
