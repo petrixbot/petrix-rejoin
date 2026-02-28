@@ -35,7 +35,6 @@ cat > package.json << 'EOF'
   "dependencies": {
     "chalk": "^5.3.0",
     "prompts": "^2.4.2",
-    "sqlite3": "^5.1.7",
     "undici": "^6.19.8"
   }
 }
@@ -59,7 +58,7 @@ fi
 cat > "$HOME/run.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 cd "$HOME/petrixbot"
-node rejoin.js
+su -c "/data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/home/petrixbot/rejoin.js"
 EOF
 chmod +x "$HOME/run.sh"
 
