@@ -1,9 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# ============================================
-#   PetrixBot PTPT-X8 - Installer for Termux
-# ============================================
-
 INSTALL_DIR="$HOME/petrixbot"
 SCRIPT_URL="https://raw.githubusercontent.com/petrixbot/petrix-rejoin/refs/heads/main/rejoin.js"
 
@@ -14,47 +10,43 @@ echo "======================================"
 echo ""
 
 # Update & install dependencies Termux
-echo "[1/6] Updating package list..."
-pkg update -y -q
+echo "[1/5] Updating package list..."
+pkg update -y -q > /dev/null 2>&1
 
-echo "[2/6] Installing modules..."
-pkg install -y nodejs sqlite wget -q
+# Installing modules
+echo "[2/5] Installing modules..."
+pkg install -y nodejs sqlite wget -q > /dev/null 2>&1
 
-# Buat folder instalasi
-echo "[3/6] Creating folder directory..."
+# Creating folder
+echo "[3/5] Creating folder directory..."
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# Buat package.json (wajib untuk ES Module)
-echo "[4/6] Creating package.json..."
+# Install node packages
+echo "[4/5] Installing packages..."
 printf '{\n  "name": "petrixbot",\n  "version": "1.0.0",\n  "type": "module",\n  "dependencies": {\n    "chalk": "^5.3.0",\n    "prompts": "^2.4.2",\n    "undici": "^6.19.8"\n  }\n}\n' > package.json
+npm install --silent > /dev/null 2>&1
 
-# Install npm packages
-echo "[5/6] Installing packages..."
-npm install --silent
-
-# Download script dari GitHub
-echo "[6/6] Downloading file rejoin.js..."
+# Download rejoin.js from github
+echo "[5/5] Downloading file rejoin..."
 wget -q -O rejoin.js "$SCRIPT_URL"
 
 if [ ! -f rejoin.js ] || [ ! -s rejoin.js ]; then
   echo ""
-  echo "[ERROR] Gagal download rejoin.js!"
+  echo "[ERROR] Failed download file rejoin!"
   exit 1
 fi
 
-# Buat shortcut run
-printf '#!/data/data/com.termux/files/usr/bin/bash\ncd "$HOME/petrixbot"\nsu -c "/data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/home/petrixbot/rejoin.js"\n' > "$HOME/run.sh"
+# Shortcut run
+printf '#!/data/data/com.termux/files/usr/bin/bash\ncd "$HOME/petrixbot"\nsu -c "PATH=/data/data/com.termux/files/usr/bin:/system/bin:/system/xbin /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/home/petrixbot/rejoin.js"\n' > "$HOME/run.sh"
 chmod +x "$HOME/run.sh"
 
 echo ""
 echo "======================================"
-echo "  Instalasi selesai!"
+echo "  PetrixBot PTPT-X8"
+echo "  - Installation Complete!"
 echo ""
-echo "  Jalankan bot dengan:"
-echo "    bash ~/run.sh"
-echo ""
-echo "  Atau langsung:"
-echo "    cd ~/petrixbot && node rejoin.js"
+echo "  Run the bot with:"
+echo "  - bash ~/run.sh"
 echo "======================================"
 echo ""
