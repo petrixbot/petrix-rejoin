@@ -572,91 +572,78 @@ async function menu_UpdateRobloxDelta() {
         const savePath = path.join('/data/data/com.termux/files/home/petrixbot/downloads', fileName);
         fs.mkdirSync(path.dirname(savePath), { recursive: true });
 
+        // Step 1: Coba download langsung via undici
         console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
-        execSync(
-            `su -c "/data/data/com.termux/files/usr/bin/wget \
-            -q --show-progress \
-            --header='User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
-            --header='Referer: https://delta.filenetwork.vip/android.html' \
-            --header='Accept: application/octet-stream,*/*' \
-            --header='Accept-Language: en-US,en;q=0.9' \
-            --header='Connection: keep-alive' \
-            -O '${savePath}' '${downloadUrl}'"`,
-            { stdio: 'inherit', env: TERMUX_ENV }
-        );
+        let downloadSuccess = false;
 
-        // Step 3: Install
-        console.log(chalk.gray(`🛠️ Installing ${fileName}...`));
-        execSync(`su -c "pm install -r -g '${savePath}'"`, { stdio: 'pipe', env: TERMUX_ENV });
+        try {
+            const dlRes = await request(downloadUrl, {
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
+                    'Referer': 'https://delta.filenetwork.vip/android.html',
+                    'Accept': 'application/octet-stream,*/*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Connection': 'keep-alive',
+                    'Origin': 'https://delta.filenetwork.vip'
+                },
+                maxRedirections: 10
+            });
 
-        console.log(chalk.green(`✅ Success Installing Roblox Delta ${version}!`));
-    } catch (err) {
-        console.log(chalk.red('❌ Error: ' + err.message));
-    }
+            if (dlRes.statusCode === 200) {
+                const fileStream = fs.createWriteStream(savePath);
+                await new Promise((resolve, reject) => {
+                    dlRes.body.pipe(fileStream);
+                    dlRes.body.on('error', reject);
+                    fileStream.on('finish', resolve);
+                });
 
-    console.log(chalk.gray('\nBack to main menu...'));
-    await delay(1000);
-    return menu_main();
-}
+                const fileSize = fs.statSync(savePath).size;
+                if (fileSize > 0) {
+                    console.log(chalk.green(`✅ Downloaded (${(fileSize / 1024 / 1024).toFixed(1)} MB)`));
+                    downloadSuccess = true;
+                }
+            }
+        } catch (_) { }
 
-async function menu_UpdateRobloxDelta_BACKUP() {
-    console.clear();
-    console.log(chalk.inverse("[PetrixBot PTPT-X8 - Updating Roblox Delta]"));
+        // Step 2: Jika gagal (403 atau file kosong), buka browser lalu tunggu file muncul
+        if (!downloadSuccess) {
+            console.log(chalk.yellow(`⚠️ Direct download failed. Opening browser...`));
+            console.log(chalk.gray(`📂 Simpan file ke folder: petrixbot/downloads/`));
+            console.log(chalk.gray(`📄 Nama file: ${fileName}\n`));
 
-    try {
-        console.log(chalk.gray('\n⏳ Getting Latest Roblox Delta...'));
+            execSync(`am start -a android.intent.action.VIEW -d "${downloadUrl}"`, { env: TERMUX_ENV });
 
-        const { statusCode, body } = await request('https://delta.filenetwork.vip/get_files.php', {
-            method: 'GET',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
-                'Referer': 'https://delta.filenetwork.vip/android.html',
-                'Accept': 'application/json'
-            },
-            maxRedirections: 5
-        });
+            // Polling tiap 3 detik sampai file ada di salah satu lokasi
+            const browserDownloadPath = `/storage/emulated/0/Download/${fileName}`;
+            let waited = 0;
+            const maxWait = 5 * 60 * 1000; // 5 menit
+            while (waited < maxWait) {
+                await delay(3000);
+                waited += 3000;
 
-        const data = JSON.parse(await body.text());
-        const latestApk = data.latest_apk[0];
-        if (!latestApk) return console.log(chalk.red('❌ No APK found'));
+                // Cek di folder petrixbot/downloads/
+                if (fs.existsSync(savePath) && fs.statSync(savePath).size > 1024 * 1024) {
+                    console.log(chalk.green(`\n✅ File ditemukan (${(fs.statSync(savePath).size / 1024 / 1024).toFixed(1)} MB)`));
+                    downloadSuccess = true;
+                    break;
+                }
 
-        const fileName = latestApk.name;
-        const match = fileName.match(/Delta-([\d.]+?)(?:-\d+)?\.apk/);
-        const version = match ? match[1] : 'Unknown';
-        const downloadUrl = `https://delta.filenetwork.vip/file/${fileName}`;
+                // Cek di folder Download browser
+                if (fs.existsSync(browserDownloadPath) && fs.statSync(browserDownloadPath).size > 1024 * 1024) {
+                    console.log(chalk.gray(`\n📁 File ditemukan di Downloads, memindahkan...`));
+                    fs.copyFileSync(browserDownloadPath, savePath);
+                    fs.unlinkSync(browserDownloadPath);
+                    console.log(chalk.green(`✅ File dipindahkan (${(fs.statSync(savePath).size / 1024 / 1024).toFixed(1)} MB)`));
+                    downloadSuccess = true;
+                    break;
+                }
 
-        //console.log(chalk.gray(`📦 Latest version : ${version}`));
-        //console.log(chalk.gray(`📄 File           : ${fileName}`));
+                process.stdout.write(chalk.gray(`\r⏳ Menunggu file download selesai... ${Math.floor(waited / 1000)}s`));
+            }
 
-        const savePath = path.join('/data/data/com.termux/files/home/petrixbot/downloads', fileName);
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-
-        console.log(chalk.gray(`📥 Downloading Roblox Delta ${version}...`));
-        const dlRes = await request(downloadUrl, {
-            method: 'GET',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
-                'Referer': 'https://delta.filenetwork.vip/android.html',
-                'Accept': 'application/octet-stream,*/*',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Connection': 'keep-alive',
-                'Origin': 'https://delta.filenetwork.vip'
-            },
-            maxRedirections: 10
-        });
-
-        if (dlRes.statusCode !== 200) throw new Error(`Download failed: HTTP ${dlRes.statusCode}`);
-
-        const fileStream = fs.createWriteStream(savePath);
-        await new Promise((resolve, reject) => {
-            dlRes.body.pipe(fileStream);
-            dlRes.body.on('error', reject);
-            fileStream.on('finish', resolve);
-        });
-
-        const fileSize = fs.statSync(savePath).size;
-        if (fileSize === 0) throw new Error('Downloaded file is empty (0 bytes)');
-        console.log(chalk.green(`✅ Downloaded (${(fileSize / 1024 / 1024).toFixed(1)} MB)`));
+            if (!downloadSuccess) throw new Error('Timeout: file tidak ditemukan setelah 5 menit');
+        }
 
         // Step 3: Install
         console.log(chalk.gray(`🛠️ Installing ${fileName}...`));
