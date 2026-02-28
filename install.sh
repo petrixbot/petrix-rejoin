@@ -35,7 +35,8 @@ cat > package.json << 'EOF'
   "dependencies": {
     "chalk": "^5.3.0",
     "prompts": "^2.4.2",
-    "undici": "^6.0.0"
+    "sqlite3": "^5.1.7",
+    "undici": "^6.19.8"
   }
 }
 EOF
