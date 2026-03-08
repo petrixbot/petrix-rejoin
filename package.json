@@ -1,0 +1,16 @@
+{
+  "name": "roblox-rejoin-tool",
+  "version": "1.0.0",
+  "description": "Roblox Rejoin Tool V1.0 - By PetrixBot",
+  "main": "rejoin.js",
+  "type": "module",
+  "scripts": {
+    "start": "node rejoin.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "prompts": "^2.4.2",
+    "sqlite3": "^5.1.7",
+    "undici": "^6.19.8"
+  }
+}
