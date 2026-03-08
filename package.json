@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Roblox Rejoin Tool V1.0 - By PetrixBot",
   "main": "rejoin.js",
-  "type": "module",
   "scripts": {
     "start": "node rejoin.js"
   },
