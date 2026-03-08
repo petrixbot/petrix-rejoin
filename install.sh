@@ -47,7 +47,8 @@ fi
 chmod +x "$HOME/run.sh"
 
 # Tambah alias petrixtool
-grep -q "alias petrixtool=" ~/.bashrc || echo "alias petrixtool='bash ~/run.sh'" >> ~/.bashrc 2>/dev/null
+touch ~/.bashrc 2>/dev/null
+grep -q "alias petrixtool=" ~/.bashrc || echo "alias petrixtool='bash ~/run.sh'" >> ~/.bashrc
 source ~/.bashrc 2>/dev/null
 
 echo ""
