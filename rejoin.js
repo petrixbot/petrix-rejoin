@@ -151,7 +151,7 @@ function roblox_setCookie(newCookie) {
             execSync(`sqlite3 ${dbPath} "UPDATE cookies SET value='${escapedCookie}', last_access_utc=${now}, last_update_utc=${now} WHERE name='.ROBLOSECURITY' AND host_key='.roblox.com';"`,
                 { encoding: 'utf8', env: TERMUX_ENV });
         } else {
-            execSync(`sqlite3 ${dbPath} "INSERT INTO cookies (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, last_update_utc, has_expires, is_persistent, priority, samesite, source_scheme, source_port) VALUES (${now}, '.roblox.com', '', '.ROBLOSECURITY', '${escapedCookie}', '', '/', 14362699149000000, 1, 1, ${now}, ${now}, 1, 1, 1, -1, 2, 443);"`,
+            execSync(`sqlite3 ${dbPath} "INSERT INTO cookies (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, priority, samesite, source_scheme, source_port, last_update_utc, source_type, has_cross_site_ancestor) VALUES (${now}, '.roblox.com', '', '.ROBLOSECURITY', '${escapedCookie}', '', '/', 14362699149000000, 1, 1, ${now}, 1, 1, 1, -1, 2, 443, ${now}, 0, 0);"`,
                 { encoding: 'utf8', env: TERMUX_ENV });
         }
 
@@ -165,6 +165,16 @@ function roblox_setCookie(newCookie) {
         console.log('Error:', err.message);
         return false;
     }
+}
+
+function roblox_checkCookie() {
+    const dbPath = '/data/data/com.roblox.client/app_webview/Default/Cookies';
+
+    const columns = execSync(
+        `sqlite3 ${dbPath} "PRAGMA table_info(cookies);"`,
+        { encoding: 'utf8', env: TERMUX_ENV }
+    ).toString().trim();
+    console.log(columns);
 }
 
 function roblox_getData() {
@@ -932,6 +942,8 @@ async function start_Rejoin1() {
         });
     };
 
+    let firstLaunch = true;
+    let reason = 'First Launch';
     while (!stopRequested) {
         // Auto Accept Friend
         if (STATUS_ACCEPT) {
@@ -955,11 +967,8 @@ async function start_Rejoin1() {
 
         // Auto Rejoin
         if (STATUS_REJOIN) {
-            const refreshed = await roblox_privateServer(USER_COOKIE, USER_ID, MAP_PLACEID);
-            if (refreshed?.gameId) {
-                PRIVATE_GAMEID = refreshed.gameId;
-            } else {
-                console.log(chalk.yellow(`[${formatDate(Date.now())}] ⏳ No players in private server — Joining...`));
+            if (firstLaunch || !PRIVATE_GAMEID) {
+                console.log(chalk.yellow(`[${formatDate(Date.now())}] ⏳ ${reason} — ${reason === 'First Launch' ? 'Joining' : 'Rejoining'}...`));
                 const opened = roblox_open(PRIVATE_SERVERLINK);
                 if (opened) {
                     console.log(chalk.green(`[${formatDate(Date.now())}] ✅ Opened Roblox — waiting ${REJOIN_DELAY / 1000}s...`));
@@ -967,12 +976,29 @@ async function start_Rejoin1() {
                 } else {
                     console.log(chalk.red(`[${formatDate(Date.now())}] ❌ Failed to open Roblox — waiting ${FAILED_DELAY / 1000}s...`));
                     await interruptibleDelay(FAILED_DELAY);
+                    continue;
                 }
+
+                const firstPresence = await roblox_presence(USER_COOKIE, USER_ID);
+                if (!firstPresence || !firstPresence.gameId) {
+                    console.log(chalk.red(`[${formatDate(Date.now())}] ❌ Failed to detect gameId — retrying...`));
+                    await interruptibleDelay(FAILED_DELAY);
+                    continue;
+                }
+
+                firstLaunch = false;
+                PRIVATE_GAMEID = firstPresence.gameId;
+                await interruptibleDelay(CHECK_INTERVAL);
                 continue;
             }
 
             // Checking stopRequested
             if (stopRequested) break;
+
+            const refreshed = await roblox_privateServer(USER_COOKIE, USER_ID, MAP_PLACEID);
+            if (refreshed?.gameId) {
+                PRIVATE_GAMEID = refreshed.gameId;
+            }
 
             const presence = await roblox_presence(USER_COOKIE, USER_ID);
             if (!presence) {
@@ -987,22 +1013,11 @@ async function start_Rejoin1() {
             const isCorrectServer = presence.gameId === PRIVATE_GAMEID;
 
             if (!isInGame || !isCorrectPlace || !isCorrectServer) {
-                let reason = '';
+                PRIVATE_GAMEID = null;
                 if (!isInGame) reason = 'Not in-game';
                 else if (!isCorrectPlace) reason = 'Wrong game';
                 else if (!isCorrectServer) reason = 'Wrong server instance';
-
-                console.log(chalk.yellow(`[${formatDate(Date.now())}] ⏳ ${reason} — Rejoining...`));
-
-                const opened = roblox_open(PRIVATE_SERVERLINK);
-                if (opened) {
-                    console.log(chalk.green(`[${formatDate(Date.now())}] ✅ Opened Roblox — waiting ${REJOIN_DELAY / 1000}s...`));
-                    await interruptibleDelay(REJOIN_DELAY);
-                } else {
-                    console.log(chalk.red(`[${formatDate(Date.now())}] ❌ Failed to open Roblox — waiting ${FAILED_DELAY / 1000}s...`));
-                    await interruptibleDelay(FAILED_DELAY);
-                    continue;
-                }
+                continue;
             }
         }
 
@@ -1203,6 +1218,7 @@ async function start_Rejoin2() {
         });
     };
 
+    let reason = 'First Launch';
     while (!stopRequested) {
         // Auto Accept Friend
         if (STATUS_ACCEPT) {
@@ -1226,7 +1242,7 @@ async function start_Rejoin2() {
         // Auto Rejoin External
         if (STATUS_REJOIN) {
             if (!EXTERNAL_GAMEID) {
-                console.log(chalk.yellow(`[${formatDate(Date.now())}] ⏳ First Launch — Joining...`));
+                console.log(chalk.yellow(`[${formatDate(Date.now())}] ⏳ ${reason} — ${reason === 'First Launch' ? 'Joining' : 'Rejoining'}...`));
                 const opened = roblox_open(EXTERNAL_SERVERLINK);
                 if (opened) {
                     console.log(chalk.green(`[${formatDate(Date.now())}] ✅ Opened Roblox — waiting ${REJOIN_DELAY / 1000}s...`));
@@ -1245,7 +1261,8 @@ async function start_Rejoin2() {
                 }
 
                 EXTERNAL_GAMEID = firstPresence.gameId;
-                await interruptibleDelay(3000);
+                await interruptibleDelay(CHECK_INTERVAL);
+                continue;
             }
 
             // Checking stopRequested
@@ -1264,20 +1281,9 @@ async function start_Rejoin2() {
 
             if (!isInGame || !isCorrectPlace || !isCorrectServer) {
                 EXTERNAL_GAMEID = null;
-                let reason = '';
                 if (!isInGame) reason = 'Not in-game';
                 else if (!isCorrectPlace) reason = 'Wrong game';
                 else if (!isCorrectServer) reason = 'Wrong server instance';
-                console.log(chalk.yellow(`[${formatDate(Date.now())}] ⏳ ${reason} — Rejoining...`));
-
-                const opened = roblox_open(EXTERNAL_SERVERLINK);
-                if (opened) {
-                    console.log(chalk.green(`[${formatDate(Date.now())}] ✅ Opened Roblox — waiting ${REJOIN_DELAY / 1000}s...`));
-                    await interruptibleDelay(REJOIN_DELAY);
-                } else {
-                    console.log(chalk.red(`[${formatDate(Date.now())}] ❌ Failed to open Roblox — waiting ${FAILED_DELAY / 1000}s...`));
-                    await interruptibleDelay(FAILED_DELAY);
-                }
                 continue;
             }
         }
