@@ -138,8 +138,6 @@ function roblox_setCookie(newCookie) {
     const dbPath = '/data/data/com.roblox.client/app_webview/Default/Cookies';
 
     try {
-        execSync('su -c "am force-stop com.roblox.client"', { env: TERMUX_ENV });
-
         const escapedCookie = newCookie.replace(/'/g, "''");
         const now = (Date.now() * 1000).toString();
 
