@@ -138,7 +138,7 @@ function roblox_setCookie(newCookie) {
     const dbPath = '/data/data/com.roblox.client/app_webview/Default/Cookies';
 
     try {
-        execSync('am force-stop com.roblox.client');
+        execSync('su -c "am force-stop com.roblox.client"', { env: TERMUX_ENV });
 
         const escapedCookie = newCookie.replace(/'/g, "''");
         const now = (Date.now() * 1000).toString();
@@ -1115,7 +1115,6 @@ async function init_Rejoin2() {
     return menu_Rejoin2();
 }
 
-// Menu: Rejoin External
 async function menu_Rejoin2() {
     while (true) {
         clearScreen();
@@ -1165,7 +1164,6 @@ async function menu_Rejoin2() {
     return menu_main();
 }
 
-// Start Automation Rejoin External
 async function start_Rejoin2() {
     clearScreen();
     console.log(chalk.inverse("[PetrixBot PTPT-X8 | Automation Rejoin External Server]"));
