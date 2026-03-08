@@ -1,3 +1,4 @@
+//new script 16:42:00
 import { execSync, execFileSync } from 'child_process';
 import { request } from 'undici';
 import prompts from 'prompts';
@@ -150,7 +151,7 @@ function roblox_setCookie(newCookie) {
             execSync(`sqlite3 ${dbPath} "UPDATE cookies SET value='${escapedCookie}', last_access_utc=${now} WHERE name='.ROBLOSECURITY' AND host_key='.roblox.com';"`,
                 { encoding: 'utf8', env: TERMUX_ENV });
         } else {
-            execSync(`sqlite3 ${dbPath} "INSERT INTO cookies (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, priority, samesite, source_scheme, source_port, is_same_party) VALUES (${now}, '.roblox.com', '', '.ROBLOSECURITY', '${escapedCookie}', '', '/', 14362699149000000, 1, 1, ${now}, 1, 1, 1, -1, 2, 443, 0);"`,
+            execSync(`sqlite3 ${dbPath} "INSERT INTO cookies (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, priority, samesite, source_scheme, source_port) VALUES (${now}, '.roblox.com', '', '.ROBLOSECURITY', '${escapedCookie}', '', '/', 14362699149000000, 1, 1, ${now}, 1, 1, 1, -1, 2, 443);"`,
                 { encoding: 'utf8', env: TERMUX_ENV });
         }
 
