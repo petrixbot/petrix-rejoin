@@ -83,7 +83,7 @@ function clearScreen() {
 function delta_currentVersion() {
     try {
         const installed = execSync(`pm list packages ${packageName}`, { encoding: 'utf8' }).trim();
-        if (!installed.includes(packageName)) return 'Not installed';
+        if (!installed.includes(packageName)) return 'Not Installed';
 
         const output = execSync(`pm dump ${packageName}`, { encoding: 'utf8' });
         const match = output.match(/versionName=([^\s]+)/);
