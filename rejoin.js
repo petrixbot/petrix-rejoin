@@ -1,9 +1,9 @@
-const { execSync, execFileSync } = require('child_process');
-const { request } = require('undici');
-const prompts = require('prompts');
-const chalk = require('chalk');
-const path = require('path');
-const fs = require('fs');
+import { execSync, execFileSync } from 'child_process';
+import { request } from 'undici';
+import prompts from 'prompts';
+import chalk from 'chalk';
+import path from 'path';
+import fs from 'fs';
 
 const TERMUX_ENV = {
     ...process.env,
