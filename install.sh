@@ -51,14 +51,15 @@ if [ ! -f "$HOME/run.sh" ] || [ ! -s "$HOME/run.sh" ]; then
 fi
 chmod +x "$HOME/run.sh"
 
-echo ""
+# Tambah alias petrixtool
+grep -q "alias petrixtool=" ~/.bashrc || echo "alias petrixtool='bash ~/run.sh'" >> ~/.bashrc 2>/dev/null
+source ~/.bashrc 2>/dev/null
+
 echo "======================================"
 echo "  Instalasi selesai!"
 echo ""
 echo "  Jalankan bot dengan:"
-echo "    bash ~/run.sh"
-echo ""
-echo "  Atau langsung:"
-echo "    cd ~/petrixbot && node rejoin.js"
+echo "  - ketik 'petrixtool',"
+echo "  - lalu enter"
 echo "======================================"
 echo ""
