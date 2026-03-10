@@ -8,12 +8,12 @@ FILE_PACKAGES="https://raw.githubusercontent.com/petrixbot/petrix-rejoin/refs/he
 FILE_RUN="https://raw.githubusercontent.com/petrixbot/petrix-rejoin/refs/heads/main/run.sh"
 
 echo ""
-echo "  PetrixBot PTPT-X8 | Installer"
+echo "[*] PetrixBot PTPT-X8 | Installer"
 echo "======================================"
 echo ""
 
 # [1/6] Check & install dependencies
-echo "[1/6] Checking system dependencies..."
+echo "[0/6] Checking system dependencies..."
 NEED_INSTALL=0
 command -v node    > /dev/null 2>&1 || NEED_INSTALL=1
 command -v wget    > /dev/null 2>&1 || NEED_INSTALL=1
@@ -70,14 +70,14 @@ source ~/.bashrc 2>/dev/null
 
 echo ""
 echo "======================================"
-echo "  PetrixBot PTPT-X8 | Installation Completed"
+echo "[*] PetrixBot PTPT-X8 | Installation Completed"
 echo ""
-echo "  Cara menjalankan:"
-echo "  1. Tutup APK Termux terlebih dahulu!"
-echo "     - (via Termux : ketik 'exit', lalu enter hingga termux tertutup)"
-echo "     - (via Notif  : buka notif termux, lalu pilih EXIT)"
-echo "  2. Buka APK Termux kembali"
-echo "  3. Jalankan command:"
-echo "     - 'petrixtool'   = Menjalankan bot"
-echo "     - 'petrixupdate' = Update bot"
+echo "    Cara menjalankan:"
+echo "    1. Tutup APK Termux terlebih dahulu!"
+echo "       - (via Termux : ketik 'exit', lalu enter hingga termux tertutup)"
+echo "       - (via Notif  : buka notif termux, lalu pilih EXIT)"
+echo "    2. Buka APK Termux kembali"
+echo "    3. Jalankan command:"
+echo "       - 'petrixtool'   = Menjalankan bot"
+echo "       - 'petrixupdate' = Update bot"
 echo ""
