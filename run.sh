@@ -1,7 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-clear
-
 # Update rejoin.js
 wget -q -O ~/petrixbot/rejoin.js.tmp https://raw.githubusercontent.com/petrixbot/petrix-rejoin/refs/heads/main/rejoin.js
 if [ -s ~/petrixbot/rejoin.js.tmp ]; then
