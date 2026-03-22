@@ -1121,18 +1121,18 @@ async function menu_Rejoin1() {
             name: "option",
             message: "Choose Menu:",
             choices: [
-                STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin',
-                STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend',
-                'Start Automation',
-                'Back'
+                { name: STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin', value: 'rejoin' },
+                { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
+                { name: 'Start Automation', value: 'start' },
+                { name: 'Back', value: 'back' }
             ],
-            result(name) { return this.choices.find(c => c.name === name)?.value ?? name; }
+            result() { return this.focused.value; }
         });
 
         const selectedValue1 = option;
-        if (selectedValue1.includes('Rejoin')) STATUS_REJOIN = !STATUS_REJOIN;
-        else if (selectedValue1.includes('Acc Friend')) STATUS_ACCEPT = !STATUS_ACCEPT;
-        else if (selectedValue1 === 'Start Automation') {
+        if (selectedValue1 === 'rejoin') STATUS_REJOIN = !STATUS_REJOIN;
+        else if (selectedValue1 === 'accept') STATUS_ACCEPT = !STATUS_ACCEPT;
+        else if (selectedValue1 === 'start') {
             log.ok('Starting automation...');
             await delay(3000);
             await start_Rejoin1();
@@ -1400,17 +1400,18 @@ async function menu_Rejoin2() {
             name: "option",
             message: "Choose Menu:",
             choices: [
-                STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin',
-                STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend',
-                'Start Automation',
-                'Back'
-            ]
+                { name: STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin', value: 'rejoin' },
+                { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
+                { name: 'Start Automation', value: 'start' },
+                { name: 'Back', value: 'back' }
+            ],
+            result() { return this.focused.value; }
         });
 
         const selectedValue2 = option;
-        if (selectedValue2.includes('Rejoin')) STATUS_REJOIN = !STATUS_REJOIN;
-        else if (selectedValue2.includes('Acc Friend')) STATUS_ACCEPT = !STATUS_ACCEPT;
-        else if (selectedValue2 === 'Start Automation') {
+        if (selectedValue2 === 'rejoin') STATUS_REJOIN = !STATUS_REJOIN;
+        else if (selectedValue2 === 'accept') STATUS_ACCEPT = !STATUS_ACCEPT;
+        else if (selectedValue2 === 'start') {
             log.ok('Starting automation...');
             await delay(3000);
             await start_Rejoin2();
@@ -1550,7 +1551,7 @@ async function menu_main() {
     const newVersion = await delta_newVersion()
 
     clearScreen();
-    printHeader('PetrixBot PTPT-X8', 'Roblox Tools  ·  v1.4.0');
+    printHeader('PetrixBot PTPT-X8', 'Roblox Tools  ·  v1.4.1');
 
     log.divider('Roblox Delta Version');
     log.detail('Installed :', chalk.yellow(oldVersion));
@@ -1562,24 +1563,25 @@ async function menu_main() {
         name: "option",
         message: "Choose Menu:",
         choices: [
-            'Delta  - Install / Update',
-            'Delta  - Add file autoexec',
-            'Roblox - Login (via Inject Cookies)',
-            'Roblox - Accept all connections',
-            'Roblox - Remove all connections',
-            'Roblox - Auto Rejoin (another ps)',
-            'Roblox - Auto Rejoin (own ps)',
-            'Exit'
-        ]
+            { name: 'Delta  - Install / Update', value: 'delta_update' },
+            { name: 'Delta  - Add file autoexec', value: 'delta_autexec' },
+            { name: 'Roblox - Login (via Inject Cookies)', value: 'login_cookie' },
+            { name: 'Roblox - Accept all connections', value: 'accept_friends' },
+            { name: 'Roblox - Remove all connections', value: 'remove_friends' },
+            { name: 'Roblox - Auto Rejoin (another ps)', value: 'rejoin_2' },
+            { name: 'Roblox - Auto Rejoin (own ps)', value: 'rejoin_1' },
+            { name: 'Exit', value: 'exit' }
+        ],
+        result() { return this.focused.value; }
     });
 
-    if (option === 'Delta  - Install / Update') await menu_UpdateRobloxDelta();
-    else if (option === 'Delta  - Add file autoexec') await menu_InjectAutoExec();
-    else if (option === 'Roblox - Login (via Inject Cookies)') await menu_InjectCookie();
-    else if (option === 'Roblox - Remove all connections') await menu_RemoveAllFriends();
-    else if (option === 'Roblox - Accept all connections') await menu_AcceptAllFriends();
-    else if (option === 'Roblox - Auto Rejoin (own ps)') await init_Rejoin1();
-    else if (option === 'Roblox - Auto Rejoin (another ps)') await init_Rejoin2();
+    if (option === 'delta_update') await menu_UpdateRobloxDelta();
+    else if (option === 'delta_autexec') await menu_InjectAutoExec();
+    else if (option === 'login_cookie') await menu_InjectCookie();
+    else if (option === 'remove_friends') await menu_RemoveAllFriends();
+    else if (option === 'accept_friends') await menu_AcceptAllFriends();
+    else if (option === 'rejoin_1') await init_Rejoin1();
+    else if (option === 'rejoin_2') await init_Rejoin2();
     else {
         log.back('Exiting...');
         process.exit(0);
@@ -1599,6 +1601,7 @@ async function menu_main() {
     const deviceRoot = checkRootDevice();
     if (deviceRoot) {
         log.ok('Device rooted!');
+        await delay(1000);
         await menu_main();
     } else {
         log.err('Device not root! Please enable root first before use!');
