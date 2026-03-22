@@ -1551,7 +1551,7 @@ async function menu_main() {
     const newVersion = await delta_newVersion()
 
     clearScreen();
-    printHeader('PetrixBot PTPT-X8', 'Roblox Tools  ·  v1.4.0');
+    printHeader('Roblox Tools', '.petrixhub - v1.5.0');
 
     log.divider('Roblox Delta Version');
     log.detail('Installed :', chalk.yellow(oldVersion));
