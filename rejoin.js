@@ -2,7 +2,7 @@ import { execSync, execFileSync, spawn } from 'child_process';
 import { request } from 'undici';
 import Tesseract from 'tesseract.js';
 import Jimp from 'jimp';
-import enquirer from 'enquirer';
+import rl from 'readline-sync';
 import chalk from 'chalk';
 import boxen from 'boxen';
 import logUpdate from 'log-update';
@@ -127,6 +127,33 @@ const log = {
     waiting: (msg) => logUpdate(`  ${chalk.cyan('⠋')}  ${chalk.gray(msg)}`),
     doneWaiting: () => logUpdate.done(),
 };
+
+// ─── Input Helpers (readline-sync) ───────────────────────────────
+function ask(message, { validate } = {}) {
+    while (true) {
+        const answer = rl.question(chalk.cyan('? ') + chalk.bold(message) + ' ');
+        if (validate) {
+            const result = validate(answer);
+            if (result !== true) { log.err(result.replace(/^❌\s*/, '')); continue; }
+        }
+        return answer;
+    }
+}
+
+function menu(message, choices) {
+    console.log(chalk.cyan('? ') + chalk.bold(message));
+    choices.forEach((c, i) => {
+        console.log(`  ${chalk.gray(String(i + 1) + '.')} ${c.name}`);
+    });
+    while (true) {
+        const input = rl.question(chalk.gray('  Enter number: '));
+        const idx = parseInt(input) - 1;
+        if (!isNaN(idx) && idx >= 0 && idx < choices.length) {
+            return choices[idx].value;
+        }
+        log.err(`Masukkan angka 1-${choices.length}`);
+    }
+}
 
 function get_WindowBounds(forceRefresh = false) {
     if (_cachedBounds && !forceRefresh) return _cachedBounds;
@@ -787,10 +814,7 @@ async function menu_InjectAutoExec() {
     printHeader('PetrixBot PTPT-X8', 'Add autoexecute Roblox Delta');
     log.info('Ketik "exit" untuk kembali ke menu utama.\n');
 
-    const { linkFile } = await enquirer.prompt({
-        type: 'input',
-        name: 'linkFile',
-        message: 'Script Link?',
+    const linkFile = ask('Script Link?', {
         validate: value => {
             if (!value?.trim()) return '❌ URL cannot be empty';
             return true;
@@ -829,10 +853,7 @@ async function menu_InjectCookie() {
     log.info('Ketik "exit" untuk kembali ke menu utama.');
     log.info('Cookie harus diawali dengan "_|WARNING:-DO-NOT-SHARE-THIS..."\n');
 
-    const { cookie } = await enquirer.prompt({
-        type: 'input',
-        name: 'cookie',
-        message: "Roblox Cookie?",
+    const cookie = ask('Roblox Cookie?', {
         validate: value => {
             if (!value) return '❌ Cookie cannot be empty';
             if (value.toLowerCase() === 'exit') return true;
@@ -1116,20 +1137,12 @@ async function menu_Rejoin1() {
         log.detail('Acc Connection :', STATUS_ACCEPT ? chalk.green('Enabled') : chalk.red('Disabled'));
         console.log();
 
-        const { option } = await enquirer.prompt({
-            type: "select",
-            name: "option",
-            message: "Choose Menu:",
-            choices: [
-                { name: STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin', value: 'rejoin' },
-                { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
-                { name: 'Start Automation', value: 'start' },
-                { name: 'Back', value: 'back' }
-            ],
-            result() { return this.focused.value; }
-        });
-
-        const selectedValue1 = option;
+        const selectedValue1 = menu('Choose Menu:', [
+            { name: STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin', value: 'rejoin' },
+            { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
+            { name: 'Start Automation', value: 'start' },
+            { name: 'Back', value: 'back' }
+        ]);
         if (selectedValue1 === 'rejoin') STATUS_REJOIN = !STATUS_REJOIN;
         else if (selectedValue1 === 'accept') STATUS_ACCEPT = !STATUS_ACCEPT;
         else if (selectedValue1 === 'start') {
@@ -1313,10 +1326,7 @@ async function init_Rejoin2() {
     }
 
     // Input link dari user
-    const { inputLink } = await enquirer.prompt({
-        type: 'input',
-        name: 'inputLink',
-        message: 'URL Private Server:',
+    const inputLink = ask('URL Private Server:', {
         validate: value => {
             if (!value?.trim()) return '❌ URL cannot be empty';
             if (value.trim().toLowerCase() === 'exit') return true;
@@ -1395,20 +1405,12 @@ async function menu_Rejoin2() {
         log.detail('Acc Connection :', STATUS_ACCEPT ? chalk.green('Enabled') : chalk.red('Disabled'));
         console.log();
 
-        const { option } = await enquirer.prompt({
-            type: "select",
-            name: "option",
-            message: "Choose Menu:",
-            choices: [
-                { name: STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin', value: 'rejoin' },
-                { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
-                { name: 'Start Automation', value: 'start' },
-                { name: 'Back', value: 'back' }
-            ],
-            result() { return this.focused.value; }
-        });
-
-        const selectedValue2 = option;
+        const selectedValue2 = menu('Choose Menu:', [
+            { name: STATUS_REJOIN ? '[Disable] Rejoin' : '[Enable] Rejoin', value: 'rejoin' },
+            { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
+            { name: 'Start Automation', value: 'start' },
+            { name: 'Back', value: 'back' }
+        ]);
         if (selectedValue2 === 'rejoin') STATUS_REJOIN = !STATUS_REJOIN;
         else if (selectedValue2 === 'accept') STATUS_ACCEPT = !STATUS_ACCEPT;
         else if (selectedValue2 === 'start') {
@@ -1551,29 +1553,23 @@ async function menu_main() {
     const newVersion = await delta_newVersion()
 
     clearScreen();
-    printHeader('PetrixBot PTPT-X8', 'Roblox Tools  ·  v1.4.1');
+    printHeader('PetrixBot PTPT-X8', 'Roblox Tools  ·  v1.4.0');
 
     log.divider('Roblox Delta Version');
     log.detail('Installed :', chalk.yellow(oldVersion));
     log.detail('Latest    :', chalk.yellow(newVersion));
     console.log();
 
-    const { option } = await enquirer.prompt({
-        type: "select",
-        name: "option",
-        message: "Choose Menu:",
-        choices: [
-            { name: 'Delta  - Install / Update', value: 'delta_update' },
-            { name: 'Delta  - Add file autoexec', value: 'delta_autexec' },
-            { name: 'Roblox - Login (via Inject Cookies)', value: 'login_cookie' },
-            { name: 'Roblox - Accept all connections', value: 'accept_friends' },
-            { name: 'Roblox - Remove all connections', value: 'remove_friends' },
-            { name: 'Roblox - Auto Rejoin (another ps)', value: 'rejoin_2' },
-            { name: 'Roblox - Auto Rejoin (own ps)', value: 'rejoin_1' },
-            { name: 'Exit', value: 'exit' }
-        ],
-        result() { return this.focused.value; }
-    });
+    const option = menu('Choose Menu:', [
+        { name: 'Delta  - Install / Update', value: 'delta_update' },
+        { name: 'Delta  - Add file autoexec', value: 'delta_autexec' },
+        { name: 'Roblox - Login (via Inject Cookies)', value: 'login_cookie' },
+        { name: 'Roblox - Accept all connections', value: 'accept_friends' },
+        { name: 'Roblox - Remove all connections', value: 'remove_friends' },
+        { name: 'Roblox - Auto Rejoin (another ps)', value: 'rejoin_2' },
+        { name: 'Roblox - Auto Rejoin (own ps)', value: 'rejoin_1' },
+        { name: 'Exit', value: 'exit' }
+    ]);
 
     if (option === 'delta_update') await menu_UpdateRobloxDelta();
     else if (option === 'delta_autexec') await menu_InjectAutoExec();
