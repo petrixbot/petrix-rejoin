@@ -1597,7 +1597,6 @@ async function menu_main() {
     const deviceRoot = checkRootDevice();
     if (deviceRoot) {
         log.ok('Device rooted!');
-        await delay(1000);
         await menu_main();
     } else {
         log.err('Device not root! Please enable root first before use!');
