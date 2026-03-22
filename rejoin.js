@@ -1125,10 +1125,11 @@ async function menu_Rejoin1() {
                 { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
                 { name: 'Start Automation', value: 'start' },
                 { name: 'Back', value: 'back' }
-            ]
+            ],
+            result(name) { return this.choices.find(c => c.name === name)?.value ?? name; }
         });
 
-        const selectedValue1 = typeof option === 'object' ? option.value : option;
+        const selectedValue1 = option;
         if (selectedValue1 === 'rejoin') STATUS_REJOIN = !STATUS_REJOIN;
         else if (selectedValue1 === 'accept') STATUS_ACCEPT = !STATUS_ACCEPT;
         else if (selectedValue1 === 'start') {
@@ -1403,10 +1404,11 @@ async function menu_Rejoin2() {
                 { name: STATUS_ACCEPT ? '[Disable] Acc Friend' : '[Enable] Acc Friend', value: 'accept' },
                 { name: 'Start Automation', value: 'start' },
                 { name: 'Back', value: 'back' }
-            ]
+            ],
+            result(name) { return this.choices.find(c => c.name === name)?.value ?? name; }
         });
 
-        const selectedValue2 = typeof option === 'object' ? option.value : option;
+        const selectedValue2 = option;
         if (selectedValue2 === 'rejoin') STATUS_REJOIN = !STATUS_REJOIN;
         else if (selectedValue2 === 'accept') STATUS_ACCEPT = !STATUS_ACCEPT;
         else if (selectedValue2 === 'start') {
@@ -1569,10 +1571,11 @@ async function menu_main() {
             { name: 'Roblox - Auto Rejoin (another ps)', value: 'rejoin_2' },
             { name: 'Roblox - Auto Rejoin (own ps)', value: 'rejoin_1' },
             { name: 'Exit', value: 'exit' }
-        ]
+        ],
+        result(name) { return this.choices.find(c => c.name === name)?.value ?? name; }
     });
 
-    const selectedMain = typeof option === 'object' ? option.value : option;
+    const selectedMain = option;
     if (selectedMain === 'delta_update') await menu_UpdateRobloxDelta();
     else if (selectedMain === 'delta_autexec') await menu_InjectAutoExec();
     else if (selectedMain === 'login_cookie') await menu_InjectCookie();
