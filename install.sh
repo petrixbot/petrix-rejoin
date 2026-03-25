@@ -20,6 +20,7 @@ su -c "settings put system accelerometer_rotation 0"
 su -c "settings put global development_settings_enabled 1"
 su -c "settings put global force_resizable_activities 1"
 su -c "settings put global enable_non_resizable_multi_window 1"
+su -c "wm density 160"
 
 
 # [1/7] Check & install dependencies
