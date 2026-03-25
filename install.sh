@@ -12,43 +12,63 @@ echo "[*] PetrixBot PTPT-X8 | Installer"
 echo "======================================"
 echo ""
 
-# [1/6] Check & install dependencies
-echo "[0/6] Checking system dependencies..."
+# [0/7] Apply Android display settings
+echo "[0/7] Applying Android display settings..."
+
+# Rotate screen to portrait (user_rotation 1 = landscape, 0 = portrait)
+settings put system user_rotation 1
+
+# Disable auto-rotate
+settings put system accelerometer_rotation 0
+
+# Set smallest width to 720dp (requires ADB/root or WRITE_SETTINGS permission)
+wm density 320 > /dev/null 2>&1
+wm size reset > /dev/null 2>&1
+settings put global development_settings_enabled 1 > /dev/null 2>&1
+
+# Enable force activities to be resizable (Developer Options)
+settings put global force_resizable_activities 1
+
+# Enable non-resizable in multi window (Developer Options)
+settings put global enable_non_resizable_multi_window 1
+
+# [1/7] Check & install dependencies
+echo "[1/7] Checking system dependencies..."
 NEED_INSTALL=0
 command -v node    > /dev/null 2>&1 || NEED_INSTALL=1
 command -v wget    > /dev/null 2>&1 || NEED_INSTALL=1
 command -v sqlite3 > /dev/null 2>&1 || NEED_INSTALL=1
 
 if [ $NEED_INSTALL -eq 1 ]; then
-  echo "[1/6] Refreshing package repositories..."
+  echo "[2/7] Refreshing package repositories..."
   pkg update -y -q > /dev/null 2>&1
 
-  echo "[2/6] Installing required system packages..."
+  echo "[3/7] Installing required system packages..."
   pkg install -y nodejs sqlite wget -q > /dev/null 2>&1
 else
-  echo "[1/6] All system dependencies are already installed."
-  echo "[2/6] Skipping system package installation."
+  echo "[2/7] All system dependencies are already installed."
+  echo "[3/7] Skipping system package installation."
 fi
 
-# [3/6] Create folder
-echo "[3/6] Setting up installation directory..."
+# [4/7] Create folder
+echo "[4/7] Setting up installation directory..."
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# [4/6] Download package.json
-echo "[4/6] Fetching project manifest..."
+# [5/7] Download package.json
+echo "[5/7] Fetching project manifest..."
 wget -q -O package.json "$FILE_PACKAGES"
 if [ ! -f package.json ] || [ ! -s package.json ]; then
   echo "[ERROR] Failed to download package.json!"
   exit 1
 fi
 
-# [5/6] Install npm packages
-echo "[5/6] Installing dependencies..."
+# [6/7] Install npm packages
+echo "[6/7] Installing dependencies..."
 npm install --silent > /dev/null 2>&1
 
-# [6/6] Download files
-echo "[6/6] Downloading bot files..."
+# [7/7] Download files
+echo "[7/7] Downloading bot files..."
 wget -q -O "$INSTALL_DIR/rejoin.js" "$FILE_REJOIN"
 if [ ! -f "$INSTALL_DIR/rejoin.js" ] || [ ! -s "$INSTALL_DIR/rejoin.js" ]; then
   echo "[ERROR] Failed to download rejoin.js!"
