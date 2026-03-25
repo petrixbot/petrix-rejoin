@@ -8,12 +8,12 @@ FILE_PACKAGES="https://raw.githubusercontent.com/petrixbot/petrix-rejoin/refs/he
 FILE_RUN="https://raw.githubusercontent.com/petrixbot/petrix-rejoin/refs/heads/main/run.sh"
 
 echo ""
-echo "[*] PetrixBot PTPT-X8 | Installer"
+echo "[*] PetrixBot - Roblox Tools | Installer"
 echo "======================================"
 echo ""
 
-# [0/7] Apply Android display settings
-echo "[0/7] Applying Android display settings..."
+# [0/7] Apply Android settings
+echo "[0/7] Applying Android settings..."
 
 su -c "settings put system user_rotation 1"
 su -c "settings put system accelerometer_rotation 0"
@@ -50,7 +50,7 @@ cd "$INSTALL_DIR"
 echo "[5/7] Fetching project manifest..."
 wget -q -O package.json "$FILE_PACKAGES"
 if [ ! -f package.json ] || [ ! -s package.json ]; then
-  echo "[ERROR] Failed to download package.json!"
+  echo "[ERROR] Failed to download project files!"
   exit 1
 fi
 
@@ -62,13 +62,13 @@ npm install --silent > /dev/null 2>&1
 echo "[7/7] Downloading bot files..."
 wget -q -O "$INSTALL_DIR/rejoin.js" "$FILE_REJOIN"
 if [ ! -f "$INSTALL_DIR/rejoin.js" ] || [ ! -s "$INSTALL_DIR/rejoin.js" ]; then
-  echo "[ERROR] Failed to download rejoin.js!"
+  echo "[ERROR] Failed to download bot files!"
   exit 1
 fi
 
 wget -q -O "$HOME/run.sh" "$FILE_RUN"
 if [ ! -f "$HOME/run.sh" ] || [ ! -s "$HOME/run.sh" ]; then
-  echo "[ERROR] Failed to download run.sh!"
+  echo "[ERROR] Failed to download run files!"
   exit 1
 fi
 chmod +x "$HOME/run.sh"
@@ -81,14 +81,14 @@ source ~/.bashrc 2>/dev/null
 
 echo ""
 echo "======================================"
-echo "[*] PetrixBot PTPT-X8 | Installation Completed"
+echo "[*] PetrixBot - Roblox Tools | Installation Completed"
 echo ""
 echo "    Cara menjalankan:"
 echo "    1. Tutup APK Termux terlebih dahulu!"
-echo "       - (via Termux : ketik 'exit', lalu enter hingga termux tertutup)"
-echo "       - (via Notif  : buka notif termux, lalu pilih EXIT)"
+echo "       - via Termux : ketik 'exit', lalu enter hingga Termux tertutup."
+echo "       - via Notif  : buka notif Termux, lalu pilih EXIT hingga notif hilang."
 echo "    2. Buka APK Termux kembali"
 echo "    3. Jalankan command:"
 echo "       - 'petrixtool'   = Menjalankan bot"
-echo "       - 'petrixupdate' = Update bot"
+echo "       - 'petrixupdate' = Update bot (hanya jika diperlukan)"
 echo ""
