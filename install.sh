@@ -15,22 +15,12 @@ echo ""
 # [0/7] Apply Android display settings
 echo "[0/7] Applying Android display settings..."
 
-# Rotate screen to portrait (user_rotation 1 = landscape, 0 = portrait)
-settings put system user_rotation 1
+su -c "settings put system user_rotation 1"
+su -c "settings put system accelerometer_rotation 0"
+su -c "settings put global development_settings_enabled 1"
+su -c "settings put global force_resizable_activities 1"
+su -c "settings put global enable_non_resizable_multi_window 1"
 
-# Disable auto-rotate
-settings put system accelerometer_rotation 0
-
-# Set smallest width to 720dp (requires ADB/root or WRITE_SETTINGS permission)
-wm density 320 > /dev/null 2>&1
-wm size reset > /dev/null 2>&1
-settings put global development_settings_enabled 1 > /dev/null 2>&1
-
-# Enable force activities to be resizable (Developer Options)
-settings put global force_resizable_activities 1
-
-# Enable non-resizable in multi window (Developer Options)
-settings put global enable_non_resizable_multi_window 1
 
 # [1/7] Check & install dependencies
 echo "[1/7] Checking system dependencies..."
